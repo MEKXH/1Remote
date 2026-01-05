@@ -8,5 +8,173 @@
       "network": "Network",
       "settings": "Settings"
     }
+  },
+  "common": {
+    "refresh": "Refresh",
+    "connect": "Connect",
+    "error": "Error",
+    "unknown_error": "Unknown error occurred",
+    "loading": "Loading..."
+  },
+  "pages": {
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "Quickly access your remote sessions and tools.",
+      "search_placeholder": "Search servers...",
+      "new_session": "New Session",
+      "clear_search": "Clear Search",
+      "stats": {
+        "active_sessions": "Active Sessions",
+        "total_servers": "Total Servers",
+        "favorites": "Favorites",
+        "recent": "Recent"
+      },
+      "connections": "Connections",
+      "empty_search": "No servers match your search.",
+      "empty_server": "No servers found. Start the WPF app to populate data.",
+      "clear_filters": "Clear Filters",
+      "connection_error": "Connection Error:",
+      "backend_error": "Please ensure the 1Remote backend is running.",
+      "sort": {
+        "label": "Sort",
+        "by": "Sort By",
+        "order": "Order",
+        "name": "Name",
+        "protocol": "Protocol",
+        "recent": "Recent",
+        "ascending": "Ascending",
+        "descending": "Descending"
+      },
+      "delete_confirm": "Are you sure you want to delete server \"{name}\"?",
+      "context_menu": {
+        "connect": "Connect",
+        "add_favorite": "Add to Favorites",
+        "remove_favorite": "Remove from Favorites",
+        "edit": "Edit",
+        "duplicate": "Duplicate",
+        "delete": "Delete"
+      }
+    },
+    "favorites": {
+      "title": "Favorites",
+      "subtitle": "Your favorite connections.",
+      "empty": "No favorite servers yet.",
+      "go_dashboard": "Go to Dashboard"
+    },
+    "history": {
+      "title": "History",
+      "subtitle": "Recently connected sessions.",
+      "empty": "No history available."
+    },
+    "network": {
+      "title": "Network",
+      "subtitle": "System network interfaces.",
+      "addresses": "addresses",
+      "mask": "Mask",
+      "cidr": "CIDR",
+      "internal": "Internal"
+    },
+    "settings": {
+      "title": "Settings",
+      "subtitle": "Customize your app experience and preferences.",
+      "appearance": {
+        "title": "Appearance",
+        "dark_mode": "Dark Mode",
+        "dark_mode_desc": "Switch between light and dark theme",
+        "primary_color": "Primary Color",
+        "primary_color_desc": "Choose the accent color for the interface",
+        "animations": "Animations",
+        "animations_desc": "Enable smooth transitions and animations"
+      },
+      "general": {
+        "title": "General",
+        "language": "Language",
+        "language_desc": "Select your preferred language",
+        "launch_startup": "Launch at Startup",
+        "launch_startup_desc": "Automatically start when system boots",
+        "minimize_tray": "Minimize to Tray",
+        "minimize_tray_desc": "Keep running in system tray when minimized",
+        "show_taskbar": "Show in Taskbar",
+        "show_taskbar_desc": "Display app icon in the taskbar",
+        "check_updates": "Do not check for updates",
+        "check_updates_desc": "Disable automatic update checks"
+      },
+      "connection": {
+        "title": "Connection",
+        "default_protocol": "Default Protocol",
+        "default_protocol_desc": "Default connection type for new sessions",
+        "timeout": "Connection Timeout",
+        "timeout_desc": "Seconds to wait before timeout",
+        "keep_alive": "Keep Alive Interval",
+        "keep_alive_desc": "Send keep-alive packets to prevent disconnection",
+        "auto_reconnect": "Auto Reconnect",
+        "auto_reconnect_desc": "Automatically reconnect on connection loss",
+        "max_reconnect": "Max Reconnect Attempts",
+        "max_reconnect_desc": "Number of retry attempts before giving up",
+        "confirm_close": "Confirm Closing",
+        "confirm_close_desc": "Ask for confirmation when closing a connection"
+      },
+      "display": {
+        "title": "Display",
+        "window_mode": "Default Window Mode",
+        "window_mode_desc": "How remote sessions are displayed",
+        "show_status": "Show Connection Status",
+        "show_status_desc": "Display connection quality indicator",
+        "modes": {
+          "windowed": "Windowed",
+          "fullscreen": "Fullscreen",
+          "borderless": "Borderless"
+        }
+      },
+      "security": {
+        "title": "Security",
+        "remember_passwords": "Remember Passwords",
+        "remember_passwords_desc": "Save credentials for quick access",
+        "lock_minimize": "Lock on Minimize",
+        "lock_minimize_desc": "Require password when app is restored",
+        "clear_clipboard": "Clear Clipboard on Disconnect",
+        "clear_clipboard_desc": "Remove copied data when session ends",
+        "require_password": "Require Password on Start",
+        "require_password_desc": "Protect app with master password"
+      },
+      "notifications": {
+        "title": "Notifications",
+        "enable": "Enable Notifications",
+        "enable_desc": "Show desktop notifications",
+        "on_connect": "Notify on Connect",
+        "on_connect_desc": "Show notification when session connects",
+        "on_disconnect": "Notify on Disconnect",
+        "on_disconnect_desc": "Show notification when session disconnects",
+        "play_sounds": "Play Sounds",
+        "play_sounds_desc": "Audio feedback for events"
+      },
+      "about": {
+        "title": "About",
+        "version": "Version",
+        "framework": "Framework",
+        "ui_library": "UI Library",
+        "github": "GitHub",
+        "documentation": "Documentation",
+        "feedback": "Feedback"
+      }
+    }
+  },
+  "components": {
+    "add_server": {
+      "title": "Add New Session",
+      "protocol": "Protocol",
+      "display_name": "Display Name",
+      "display_name_placeholder": "My Server",
+      "host": "Host",
+      "host_placeholder": "192.168.1.100",
+      "port": "Port",
+      "username": "Username",
+      "username_placeholder": "Administrator",
+      "password": "Password",
+      "password_placeholder": "******",
+      "cancel": "Cancel",
+      "save": "Save",
+      "failed": "Failed to add server"
+    }
   }
 }

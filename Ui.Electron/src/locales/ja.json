@@ -1,0 +1,174 @@
+{
+  "app": {
+    "title": "1Remote",
+    "menu": {
+      "sessions": "セッション",
+      "favorites": "お気に入り",
+      "history": "履歴",
+      "network": "ネットワーク",
+      "settings": "設定"
+    }
+  },
+  "common": {
+    "refresh": "更新",
+    "connect": "接続",
+    "error": "エラー",
+    "unknown_error": "不明なエラーが発生しました",
+    "loading": "読み込み中..."
+  },
+  "pages": {
+    "dashboard": {
+      "title": "ダッシュボード",
+      "subtitle": "リモートセッションとツールに素早くアクセスできます。",
+      "search_placeholder": "サーバーを検索...",
+      "new_session": "新規セッション",
+      "clear_search": "検索をクリア",
+      "stats": {
+        "active_sessions": "アクティブセッション",
+        "total_servers": "総サーバー数",
+        "favorites": "お気に入り",
+        "recent": "最近使用"
+      },
+      "connections": "接続",
+      "empty_search": "一致するサーバーがありません。",
+      "empty_server": "サーバーが見つかりません。WPFアプリを起動してデータを入力してください。",
+      "connection_error": "接続エラー：",
+      "backend_error": "1Remoteバックエンドが実行されていることを確認してください。",
+      "sort": {
+        "label": "並び替え",
+        "by": "並び替え基準",
+        "order": "順序",
+        "name": "名前",
+        "protocol": "プロトコル",
+        "recent": "最近使用",
+        "ascending": "昇順",
+        "descending": "降順"
+      },
+      "context_menu": {
+        "connect": "接続",
+        "add_favorite": "お気に入りに追加",
+        "remove_favorite": "お気に入りから削除",
+        "edit": "編集",
+        "duplicate": "複製",
+        "delete": "削除"
+      }
+    },
+    "favorites": {
+      "title": "お気に入り",
+      "subtitle": "お気に入りの接続。",
+      "empty": "お気に入りはまだありません。",
+      "go_dashboard": "ダッシュボードへ"
+    },
+    "history": {
+      "title": "履歴",
+      "subtitle": "最近接続したセッション。",
+      "empty": "履歴がありません。"
+    },
+    "network": {
+      "title": "ネットワーク",
+      "subtitle": "システムネットワークインターフェース。",
+      "addresses": "アドレス",
+      "mask": "マスク",
+      "cidr": "CIDR",
+      "internal": "内部"
+    },
+    "settings": {
+      "title": "設定",
+      "subtitle": "アプリの体験と設定をカスタマイズします。",
+      "appearance": {
+        "title": "外観",
+        "dark_mode": "ダークモード",
+        "dark_mode_desc": "ライトテーマとダークテーマを切り替え",
+        "primary_color": "メインカラー",
+        "primary_color_desc": "インターフェースのアクセントカラーを選択",
+        "animations": "アニメーション",
+        "animations_desc": "スムーズなトランジションとアニメーションを有効化"
+      },
+      "general": {
+        "title": "一般",
+        "language": "言語",
+        "language_desc": "お好みの言語を選択",
+        "launch_startup": "スタートアップに登録",
+        "launch_startup_desc": "システム起動時に自動的に起動",
+        "minimize_tray": "トレイに最小化",
+        "minimize_tray_desc": "最小化時にシステムトレイで実行を継続",
+        "show_taskbar": "タスクバーに表示",
+        "show_taskbar_desc": "タスクバーにアプリアイコンを表示"
+      },
+      "connection": {
+        "title": "接続",
+        "default_protocol": "デフォルトプロトコル",
+        "default_protocol_desc": "新規セッションのデフォルト接続タイプ",
+        "timeout": "接続タイムアウト",
+        "timeout_desc": "タイムアウトまでの待機秒数",
+        "keep_alive": "キープアライブ間隔",
+        "keep_alive_desc": "切断を防ぐためにキープアライブパケットを送信",
+        "auto_reconnect": "自動再接続",
+        "auto_reconnect_desc": "接続が失われた場合に自動的に再接続",
+        "max_reconnect": "最大再接続試行回数",
+        "max_reconnect_desc": "諦めるまでの再試行回数"
+      },
+      "display": {
+        "title": "表示",
+        "window_mode": "デフォルトウィンドウモード",
+        "window_mode_desc": "リモートセッションの表示方法",
+        "show_status": "接続状態を表示",
+        "show_status_desc": "接続品質インジケーターを表示",
+        "modes": {
+          "windowed": "ウィンドウモード",
+          "fullscreen": "フルスクリーン",
+          "borderless": "ボーダーレス"
+        }
+      },
+      "security": {
+        "title": "セキュリティ",
+        "remember_passwords": "パスワードを記憶",
+        "remember_passwords_desc": "クイックアクセスのために資格情報を保存",
+        "lock_minimize": "最小化時にロック",
+        "lock_minimize_desc": "アプリ復元時にパスワードを要求",
+        "clear_clipboard": "切断時にクリップボードをクリア",
+        "clear_clipboard_desc": "セッション終了時にコピーしたデータを削除",
+        "require_password": "起動時にパスワードを要求",
+        "require_password_desc": "マスターパスワードでアプリを保護"
+      },
+      "notifications": {
+        "title": "通知",
+        "enable": "通知を有効化",
+        "enable_desc": "デスクトップ通知を表示",
+        "on_connect": "接続時に通知",
+        "on_connect_desc": "セッション接続時に通知を表示",
+        "on_disconnect": "切断時に通知",
+        "on_disconnect_desc": "セッション切断時に通知を表示",
+        "play_sounds": "サウンドを再生",
+        "play_sounds_desc": "イベントのオーディオフィードバック"
+      },
+      "about": {
+        "title": "このアプリについて",
+        "version": "バージョン",
+        "framework": "フレームワーク",
+        "ui_library": "UIライブラリ",
+        "github": "GitHub",
+        "documentation": "ドキュメント",
+        "feedback": "フィードバック"
+      }
+    }
+  },
+  "components": {
+    "add_server": {
+      "title": "新規セッション",
+      "protocol": "プロトコル",
+      "display_name": "表示名",
+      "display_name_placeholder": "マイサーバー",
+      "host": "ホスト",
+      "host_placeholder": "192.168.1.100",
+      "port": "ポート",
+      "username": "ユーザー名",
+      "username_placeholder": "Administrator",
+      "password": "パスワード",
+      "password_placeholder": "******",
+      "cancel": "キャンセル",
+      "save": "保存",
+      "failed": "サーバーの追加に失敗しました"
+    }
+  }
+}

@@ -1,5 +1,43 @@
-# Vue 3 + TypeScript + Vite
+# 1Remote Electron UI
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+A modern Vue 3 + Electron frontend for the 1Remote project.
 
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
+## Features
+
+- **Dashboard**: View, filter, and connect to your remote sessions.
+- **Search**: Real-time filtering of servers by name, protocol, or tags.
+- **Favorites**: Mark frequently used servers for quick access (persisted locally).
+- **History**: View recently connected sessions.
+- **Network**: Inspect system network interfaces.
+- **IPC Integration**: Communicates with the 1Remote WPF backend via Named Pipes.
+
+## Development
+
+### Prerequisites
+
+- Node.js (v18+)
+- 1Remote WPF Backend running (for `getServers` and `connect` IPC calls)
+
+### Setup
+
+```bash
+npm install
+```
+
+### Run
+
+```bash
+npm run dev
+```
+
+### Build
+
+```bash
+npm run build
+```
+
+## Architecture
+
+- **Frontend**: Vue 3, Nuxt UI (Tailwind CSS), Vite.
+- **Backend Communication**: Electron IPC -> Named Pipes -> C# WPF Backend.
+- **State Management**: Vue Reactivity & VueUse.

@@ -1,19 +1,93 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { IServerDto } from '../electron-api'
+import { useFavorites } from '../composables/useFavorites'
+import AddServerModal from '../components/AddServerModal.vue'
+import type { ContextMenuItem } from '@nuxt/ui'
 
+const { t } = useI18n()
 const servers = ref<IServerDto[]>([])
+const allTags = ref<string[]>([])
+const selectedTags = ref<string[]>([])
+const stats = ref({
+  ActiveSessions: 0,
+  TotalServers: 0,
+  Favorites: 0,
+  Recent: 0
+})
 const loading = ref(true)
 const error = ref('')
+const searchQuery = ref('')
+const showAddModal = ref(false)
+const editingId = ref<string | null>(null)
+const { favorites, toggleFavorite, isFavorite } = useFavorites()
+
+// Layout and sorting options
+const viewMode = ref<'grid' | 'list'>('grid')
+const sortBy = ref<'name' | 'protocol' | 'recent'>('name')
+const sortOrder = ref<'asc' | 'desc'>('asc')
+
+const filteredServers = computed(() => {
+  let result = servers.value
+
+  // Filter by tags
+  if (selectedTags.value.length > 0) {
+    result = result.filter(s => 
+      selectedTags.value.every(tag => s.Tags.includes(tag))
+    )
+  }
+
+  // Filter by search query
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    result = result.filter(s =>
+      s.DisplayName.toLowerCase().includes(query) ||
+      s.SubTitle.toLowerCase().includes(query) ||
+      s.Protocol.toLowerCase().includes(query) ||
+      s.Tags.some(t => t.toLowerCase().includes(query))
+    )
+  }
+
+  // Sort
+  result = [...result].sort((a, b) => {
+    let comparison = 0
+
+    if (sortBy.value === 'name') {
+      comparison = a.DisplayName.localeCompare(b.DisplayName)
+    } else if (sortBy.value === 'protocol') {
+      comparison = a.Protocol.localeCompare(b.Protocol)
+    } else if (sortBy.value === 'recent') {
+      const aTime = a.LastConnectTime ? new Date(a.LastConnectTime).getTime() : 0
+      const bTime = b.LastConnectTime ? new Date(b.LastConnectTime).getTime() : 0
+      comparison = bTime - aTime
+    }
+
+    return sortOrder.value === 'asc' ? comparison : -comparison
+  })
+
+  return result
+})
 
 const fetchServers = async () => {
   loading.value = true
   error.value = ''
   try {
-    servers.value = await window.electronAPI.getServers()
+    const [serversData, statsData, tagsData] = await Promise.all([
+      window.electronAPI.getServers(),
+      window.electronAPI.getDashboardStats(),
+      window.electronAPI.getTags()
+    ])
+    servers.value = serversData
+    if (statsData) {
+      stats.value = statsData
+    }
+    if (tagsData) {
+      allTags.value = tagsData
+    }
   } catch (err: any) {
     console.error('Failed to fetch servers:', err)
-    error.value = err.message || 'Unknown error occurred'
+    error.value = err.message || t('common.unknown_error')
   } finally {
     loading.value = false
   }
@@ -23,92 +97,366 @@ const handleConnect = async (serverId: string) => {
   await window.electronAPI.connect(serverId)
 }
 
+const handleEdit = (serverId: string) => {
+  editingId.value = serverId
+  showAddModal.value = true
+}
+
+const handleDelete = async (server: IServerDto) => {
+  if (confirm(t('pages.dashboard.delete_confirm', { name: server.DisplayName }))) {
+    loading.value = true
+    try {
+      const result = await window.electronAPI.deleteServer(server.Id)
+      if (result.IsSuccess) {
+        await fetchServers()
+      } else {
+        alert(result.ErrorInfo || t('common.unknown_error'))
+      }
+    } catch (err: any) {
+      console.error('Failed to delete server:', err)
+      alert(err.message || t('common.unknown_error'))
+    } finally {
+      loading.value = false
+    }
+  }
+}
+
+const handleDuplicate = async (server: IServerDto) => {
+  loading.value = true
+  try {
+    const result = await window.electronAPI.duplicateServer(server.Id)
+    if (result.IsSuccess) {
+      await fetchServers()
+    } else {
+      alert(result.ErrorInfo || t('common.unknown_error'))
+    }
+  } catch (err: any) {
+    console.error('Failed to duplicate server:', err)
+    alert(err.message || t('common.unknown_error'))
+  } finally {
+    loading.value = false
+  }
+}
+
+// Context menu for each server card
+const getContextMenuItems = (server: IServerDto): ContextMenuItem[][] => {
+  return [
+    [
+      {
+        label: t('pages.dashboard.context_menu.connect'),
+        icon: 'i-lucide-play',
+        onSelect: () => handleConnect(server.Id)
+      },
+      {
+        label: isFavorite(server.Id)
+          ? t('pages.dashboard.context_menu.remove_favorite')
+          : t('pages.dashboard.context_menu.add_favorite'),
+        icon: isFavorite(server.Id) ? 'i-lucide-star-off' : 'i-lucide-star',
+        onSelect: () => toggleFavorite(server.Id)
+      }
+    ],
+    [
+      {
+        label: t('pages.dashboard.context_menu.edit'),
+        icon: 'i-lucide-pencil',
+        onSelect: () => handleEdit(server.Id)
+      },
+      {
+        label: t('pages.dashboard.context_menu.duplicate'),
+        icon: 'i-lucide-copy',
+        onSelect: () => handleDuplicate(server)
+      }
+    ],
+    [
+      {
+        label: t('pages.dashboard.context_menu.delete'),
+        icon: 'i-lucide-trash-2',
+        color: 'error',
+        onSelect: () => handleDelete(server)
+      }
+    ]
+  ]
+}
+
 onMounted(() => {
   fetchServers()
 })
 </script>
 
 <template>
-  <div class="p-8 max-w-7xl mx-auto">
+  <div class="p-8 max-w-7xl mx-auto w-full">
     <!-- Welcome Header -->
-    <div class="flex justify-between items-end mb-8">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
       <div>
-        <h1 class="text-3xl font-extrabold tracking-tight mb-1 text-zinc-900 dark:text-zinc-50">Dashboard</h1>
-        <p class="text-zinc-500 dark:text-zinc-400">Quickly access your remote sessions and tools.</p>
+        <h1 class="text-3xl font-extrabold tracking-tight mb-1 text-zinc-900 dark:text-zinc-50">{{ t('pages.dashboard.title') }}</h1>
+        <p class="text-zinc-500 dark:text-zinc-400">{{ t('pages.dashboard.subtitle') }}</p>
       </div>
-      <div class="flex gap-2">
-        <UButton icon="i-lucide-plus" label="New Session" />
-        <UButton icon="i-lucide-refresh-cw" variant="outline" label="Refresh" color="neutral" @click="fetchServers" :loading="loading" />
+      <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+        <UInput 
+          v-model="searchQuery" 
+          icon="i-lucide-search" 
+          :placeholder="t('pages.dashboard.search_placeholder')" 
+          class="w-full md:w-64"
+          :ui="{ icon: { trailing: { pointer: '' } } }"
+        >
+          <template #trailing v-if="searchQuery">
+            <UButton
+              color="neutral"
+              variant="link"
+              icon="i-lucide-x"
+              :padded="false"
+              @click="searchQuery = ''"
+            />
+          </template>
+        </UInput>
+        <UButton icon="i-lucide-plus" :label="t('pages.dashboard.new_session')" @click="showAddModal = true" />
+        <UButton icon="i-lucide-refresh-cw" variant="outline" :label="t('common.refresh')" color="neutral" @click="fetchServers" :loading="loading" />
       </div>
     </div>
 
     <!-- Stats / Quick Info -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-       <UCard v-for="(stat, idx) in ['Active Sessions', 'Total Servers', 'Favorites', 'Recent']" :key="idx" :ui="{ body: 'p-4' }">
-          <div class="text-xs text-zinc-500 mb-1 uppercase tracking-wider font-semibold">{{ stat }}</div>
-          <div class="text-2xl font-bold"> {{ idx === 1 ? servers.length : [0, 0, 0, 0][idx] }}</div>
+       <UCard v-for="(statKey, idx) in ['active_sessions', 'total_servers', 'favorites', 'recent']" :key="idx" :ui="{ body: 'p-4' }">
+          <div class="text-xs text-zinc-500 mb-1 uppercase tracking-wider font-semibold">{{ t(`pages.dashboard.stats.${statKey}`) }}</div>
+          <div class="text-2xl font-bold">
+            <template v-if="idx === 0">{{ stats.ActiveSessions }}</template>
+            <template v-else-if="idx === 1">{{ servers.length }}</template>
+            <template v-else-if="idx === 2">{{ favorites.length }}</template>
+            <template v-else-if="idx === 3">{{ stats.Recent }}</template>
+          </div>
        </UCard>
     </div>
 
-    <!-- Server List -->
-    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
-      <UIcon name="i-lucide-list" />
-      Connections ({{ servers.length }})
-    </h2>
+    <!-- Tags Filter -->
+    <div v-if="allTags.length > 0" class="flex flex-wrap gap-2 mb-6">
+      <UButton
+        v-for="tag in allTags"
+        :key="tag"
+        size="xs"
+        :variant="selectedTags.includes(tag) ? 'solid' : 'outline'"
+        :color="selectedTags.includes(tag) ? 'primary' : 'neutral'"
+        @click="selectedTags.includes(tag) ? selectedTags = selectedTags.filter(t => t !== tag) : selectedTags.push(tag)"
+        class="rounded-full"
+      >
+        #{{ tag }}
+      </UButton>
+      <UButton
+        v-if="selectedTags.length > 0"
+        size="xs"
+        variant="link"
+        color="error"
+        icon="i-lucide-trash-2"
+        @click="selectedTags = []"
+      >
+        {{ t('pages.dashboard.clear_filters') }}
+      </UButton>
+    </div>
+
+    <!-- Server List Header -->
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-semibold flex items-center gap-2">
+        <UIcon name="i-lucide-list" />
+        {{ t('pages.dashboard.connections') }} ({{ filteredServers.length }}<span v-if="filteredServers.length !== servers.length" class="text-zinc-400 font-normal">/ {{ servers.length }}</span>)
+      </h2>
+
+      <div class="flex items-center gap-2">
+        <!-- Sort options -->
+        <UDropdownMenu>
+          <UButton
+            icon="i-lucide-arrow-up-down"
+            variant="outline"
+            color="neutral"
+            size="sm"
+            :label="t('pages.dashboard.sort.label')"
+          />
+
+          <template #content>
+            <div class="p-2">
+              <div class="text-xs font-semibold text-zinc-500 mb-2 px-2">{{ t('pages.dashboard.sort.by') }}</div>
+              <UButton
+                :variant="sortBy === 'name' ? 'soft' : 'ghost'"
+                color="neutral"
+                size="sm"
+                icon="i-lucide-text"
+                :label="t('pages.dashboard.sort.name')"
+                class="w-full justify-start mb-1"
+                @click="sortBy = 'name'"
+              />
+              <UButton
+                :variant="sortBy === 'protocol' ? 'soft' : 'ghost'"
+                color="neutral"
+                size="sm"
+                icon="i-lucide-layers"
+                :label="t('pages.dashboard.sort.protocol')"
+                class="w-full justify-start mb-1"
+                @click="sortBy = 'protocol'"
+              />
+              <UButton
+                :variant="sortBy === 'recent' ? 'soft' : 'ghost'"
+                color="neutral"
+                size="sm"
+                icon="i-lucide-clock"
+                :label="t('pages.dashboard.sort.recent')"
+                class="w-full justify-start mb-3"
+                @click="sortBy = 'recent'"
+              />
+
+              <USeparator class="my-2" />
+
+              <div class="text-xs font-semibold text-zinc-500 mb-2 px-2">{{ t('pages.dashboard.sort.order') }}</div>
+              <UButton
+                :variant="sortOrder === 'asc' ? 'soft' : 'ghost'"
+                color="neutral"
+                size="sm"
+                icon="i-lucide-arrow-up-a-z"
+                :label="t('pages.dashboard.sort.ascending')"
+                class="w-full justify-start mb-1"
+                @click="sortOrder = 'asc'"
+              />
+              <UButton
+                :variant="sortOrder === 'desc' ? 'soft' : 'ghost'"
+                color="neutral"
+                size="sm"
+                icon="i-lucide-arrow-down-z-a"
+                :label="t('pages.dashboard.sort.descending')"
+                class="w-full justify-start"
+                @click="sortOrder = 'desc'"
+              />
+            </div>
+          </template>
+        </UDropdownMenu>
+
+        <!-- View mode toggle -->
+        <UFieldGroup orientation="horizontal">
+          <UButton
+            :icon="viewMode === 'grid' ? 'i-lucide-grid-3x3' : 'i-lucide-grid-3x3'"
+            :variant="viewMode === 'grid' ? 'solid' : 'outline'"
+            :color="viewMode === 'grid' ? 'primary' : 'neutral'"
+            size="sm"
+            @click="viewMode = 'grid'"
+          />
+          <UButton
+            :icon="viewMode === 'list' ? 'i-lucide-list' : 'i-lucide-list'"
+            :variant="viewMode === 'list' ? 'solid' : 'outline'"
+            :color="viewMode === 'list' ? 'primary' : 'neutral'"
+            size="sm"
+            @click="viewMode = 'list'"
+          />
+        </UFieldGroup>
+      </div>
+    </div>
     
     <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
        <USkeleton v-for="i in 6" :key="i" class="h-40 w-full" />
     </div>
 
     <div v-else-if="error" class="p-4 border border-red-200 bg-red-50 text-red-600 rounded-lg">
-      <p class="font-bold">Connection Error:</p>
+      <p class="font-bold">{{ t('pages.dashboard.connection_error') }}</p>
       <p>{{ error }}</p>
-      <p class="text-sm mt-2 text-red-500">Please ensure the 1Remote backend is running.</p>
+      <p class="text-sm mt-2 text-red-500">{{ t('pages.dashboard.backend_error') }}</p>
     </div>
 
-    <div v-else-if="servers.length === 0" class="flex flex-col items-center justify-center py-20 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl">
-       <UIcon name="i-lucide-monitor-off" class="w-12 h-12 text-zinc-300 mb-4" />
-       <p class="text-zinc-500">No servers found. Start the WPF app to populate data.</p>
+    <div v-else-if="filteredServers.length === 0" class="flex flex-col items-center justify-center py-20 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl">
+       <UIcon v-if="searchQuery" name="i-lucide-search-x" class="w-12 h-12 text-zinc-300 mb-4" />
+       <UIcon v-else name="i-lucide-monitor-off" class="w-12 h-12 text-zinc-300 mb-4" />
+       <p class="text-zinc-500">{{ searchQuery ? t('pages.dashboard.empty_search') : t('pages.dashboard.empty_server') }}</p>
+       <UButton v-if="searchQuery" :label="t('pages.dashboard.clear_search')" variant="link" color="primary" @click="searchQuery = ''" class="mt-2" />
     </div>
 
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <UCard 
-        v-for="server in servers" 
-        :key="server.Id"
-        class="group hover:ring-2 hover:ring-primary-500 transition-all duration-300 cursor-pointer"
-        @click="handleConnect(server.Id)"
-        :ui="{ 
-          root: 'overflow-hidden',
-          header: 'border-none p-4 pb-0',
-          body: 'p-4',
-          footer: 'bg-zinc-50 dark:bg-zinc-900/50 p-3 flex justify-between items-center'
-        }"
-      >
-        <template #header>
-          <div class="flex justify-between items-start">
-            <div class="p-2 rounded-lg bg-primary-500/10 text-primary-500">
-              <UIcon :name="server.Protocol.toLowerCase().includes('ssh') ? 'i-lucide-terminal' : 'i-lucide-monitor'" class="w-6 h-6" />
+    <!-- Grid View -->
+    <div v-else-if="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <UContextMenu v-for="server in filteredServers" :key="server.Id" :items="getContextMenuItems(server)">
+        <UCard
+          class="group hover:ring-2 hover:ring-primary-500 transition-all duration-300 cursor-pointer"
+          @click="handleConnect(server.Id)"
+          :ui="{
+            root: 'overflow-hidden',
+            header: 'border-none p-4 pb-0',
+            body: 'p-4',
+            footer: 'bg-zinc-50 dark:bg-zinc-900/50 p-3 flex justify-between items-center'
+          }"
+        >
+          <template #header>
+            <div class="flex justify-between items-start">
+              <div class="p-2 rounded-lg bg-primary-500/10 text-primary-500">
+                <UIcon :name="server.Protocol.toLowerCase().includes('ssh') ? 'i-lucide-terminal' : 'i-lucide-monitor'" class="w-6 h-6" />
+              </div>
+              <div class="flex gap-1">
+                <UButton
+                  :icon="isFavorite(server.Id) ? 'i-lucide-star' : 'i-lucide-star'"
+                  :color="isFavorite(server.Id) ? 'yellow' : 'neutral'"
+                  variant="ghost"
+                  size="sm"
+                  :class="{ 'text-yellow-500': isFavorite(server.Id) }"
+                  @click.stop="toggleFavorite(server.Id)"
+                />
+                <UDropdownMenu :items="getContextMenuItems(server)">
+                  <UButton icon="i-lucide-more-vertical" variant="ghost" color="neutral" size="sm" @click.stop />
+                </UDropdownMenu>
+              </div>
             </div>
-            <UButton icon="i-lucide-more-vertical" variant="ghost" color="neutral" size="sm" @click.stop />
-          </div>
-        </template>
+          </template>
 
-        <div class="mt-2">
-          <div class="font-bold text-lg leading-tight truncate" :title="server.DisplayName">{{ server.DisplayName }}</div>
-          <div class="text-sm text-zinc-500 flex items-center gap-1 mt-1 truncate">
-            <UIcon name="i-lucide-hash" size="14" />
-            {{ server.SubTitle }}
+          <div class="mt-2">
+            <div class="font-bold text-lg leading-tight truncate" :title="server.DisplayName">{{ server.DisplayName }}</div>
+            <div class="text-sm text-zinc-500 flex items-center gap-1 mt-1 truncate">
+              <UIcon name="i-lucide-hash" size="14" />
+              {{ server.SubTitle }}
+            </div>
           </div>
-        </div>
 
-        <template #footer>
-          <div class="flex items-center gap-1">
-            <UBadge size="sm" variant="subtle" color="primary">{{ server.Protocol }}</UBadge>
-            <UBadge v-for="tag in server.Tags.slice(0, 2)" :key="tag" size="sm" variant="subtle" color="neutral">{{ tag }}</UBadge>
-          </div>
-          <UButton size="xs" label="Connect" trailing-icon="i-lucide-chevron-right" @click.stop="handleConnect(server.Id)" />
-        </template>
-      </UCard>
+          <template #footer>
+            <div class="flex items-center gap-1">
+              <UBadge size="sm" variant="subtle" color="primary">{{ server.Protocol }}</UBadge>
+              <UBadge v-for="tag in server.Tags.slice(0, 2)" :key="tag" size="sm" variant="subtle" color="neutral">{{ tag }}</UBadge>
+            </div>
+            <UButton size="xs" :label="t('common.connect')" trailing-icon="i-lucide-chevron-right" @click.stop="handleConnect(server.Id)" />
+          </template>
+        </UCard>
+      </UContextMenu>
     </div>
+
+    <!-- List View -->
+    <div v-else class="space-y-2 w-full">
+      <div v-for="server in filteredServers" :key="server.Id" class="w-full">
+        <UContextMenu :items="getContextMenuItems(server)" class="block w-full">
+          <UCard
+            class="group hover:ring-2 hover:ring-primary-500 transition-all duration-300 cursor-pointer w-full"
+            @click="handleConnect(server.Id)"
+            :ui="{ root: 'w-full max-w-none', body: 'p-3 flex items-center justify-between' }"
+          >
+            <div class="flex items-center gap-4 flex-1 min-w-0">
+              <div class="p-2 rounded-lg bg-primary-500/10 text-primary-500 shrink-0">
+                <UIcon :name="server.Protocol.toLowerCase().includes('ssh') ? 'i-lucide-terminal' : 'i-lucide-monitor'" class="w-5 h-5" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="font-bold text-zinc-900 dark:text-zinc-100 truncate">{{ server.DisplayName }}</div>
+                <div class="text-xs text-zinc-500 flex items-center gap-2 truncate">
+                  <span>{{ server.SubTitle }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+              <UBadge size="xs" variant="subtle" color="primary">{{ server.Protocol }}</UBadge>
+              <UBadge v-for="tag in server.Tags.slice(0, 2)" :key="tag" size="xs" variant="subtle" color="neutral">{{ tag }}</UBadge>
+              <UButton
+                :icon="isFavorite(server.Id) ? 'i-lucide-star' : 'i-lucide-star'"
+                :color="isFavorite(server.Id) ? 'yellow' : 'neutral'"
+                variant="ghost"
+                size="sm"
+                @click.stop="toggleFavorite(server.Id)"
+              />
+              <UDropdownMenu :items="getContextMenuItems(server)">
+                <UButton icon="i-lucide-more-vertical" variant="ghost" color="neutral" size="sm" @click.stop />
+              </UDropdownMenu>
+              <UButton icon="i-lucide-chevron-right" variant="ghost" color="neutral" size="sm" />
+            </div>
+          </UCard>
+        </UContextMenu>
+      </div>
+    </div>
+
+    <AddServerModal v-model="showAddModal" v-model:editing-id="editingId" @added="fetchServers" @updated="fetchServers" />
   </div>
 </template>

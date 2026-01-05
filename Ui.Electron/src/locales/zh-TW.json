@@ -1,0 +1,174 @@
+{
+  "app": {
+    "title": "1Remote",
+    "menu": {
+      "sessions": "會話",
+      "favorites": "收藏",
+      "history": "歷史",
+      "network": "網路",
+      "settings": "設定"
+    }
+  },
+  "common": {
+    "refresh": "重新整理",
+    "connect": "連接",
+    "error": "錯誤",
+    "unknown_error": "發生未知錯誤",
+    "loading": "載入中..."
+  },
+  "pages": {
+    "dashboard": {
+      "title": "儀表板",
+      "subtitle": "快速存取您的遠端會話和工具。",
+      "search_placeholder": "搜尋伺服器...",
+      "new_session": "新建會話",
+      "clear_search": "清除搜尋",
+      "stats": {
+        "active_sessions": "活躍會話",
+        "total_servers": "總伺服器",
+        "favorites": "收藏",
+        "recent": "最近存取"
+      },
+      "connections": "連接",
+      "empty_search": "沒有符合的伺服器。",
+      "empty_server": "未找到伺服器。請啟動 WPF 應用程式以填充資料。",
+      "connection_error": "連接錯誤：",
+      "backend_error": "請確保 1Remote 後端正在執行。",
+      "sort": {
+        "label": "排序",
+        "by": "排序方式",
+        "order": "順序",
+        "name": "名稱",
+        "protocol": "協定",
+        "recent": "最近使用",
+        "ascending": "升冪",
+        "descending": "降冪"
+      },
+      "context_menu": {
+        "connect": "連接",
+        "add_favorite": "新增至收藏",
+        "remove_favorite": "取消收藏",
+        "edit": "編輯",
+        "duplicate": "複製",
+        "delete": "刪除"
+      }
+    },
+    "favorites": {
+      "title": "收藏",
+      "subtitle": "您收藏的連接。",
+      "empty": "暫無收藏。",
+      "go_dashboard": "前往儀表板"
+    },
+    "history": {
+      "title": "歷史",
+      "subtitle": "最近連接的會話。",
+      "empty": "暫無歷史記錄。"
+    },
+    "network": {
+      "title": "網路",
+      "subtitle": "系統網路介面。",
+      "addresses": "位址",
+      "mask": "遮罩",
+      "cidr": "CIDR",
+      "internal": "內部"
+    },
+    "settings": {
+      "title": "設定",
+      "subtitle": "自訂您的應用程式體驗和偏好。",
+      "appearance": {
+        "title": "外觀",
+        "dark_mode": "深色模式",
+        "dark_mode_desc": "在淺色和深色主題之間切換",
+        "primary_color": "主色調",
+        "primary_color_desc": "選擇介面的強調色",
+        "animations": "動畫",
+        "animations_desc": "啟用平滑過渡和動畫"
+      },
+      "general": {
+        "title": "一般",
+        "language": "語言",
+        "language_desc": "選擇您的首選語言",
+        "launch_startup": "開機自啟",
+        "launch_startup_desc": "系統啟動時自動執行",
+        "minimize_tray": "最小化到系統匣",
+        "minimize_tray_desc": "最小化時保持在系統匣執行",
+        "show_taskbar": "顯示在工作列",
+        "show_taskbar_desc": "在工作列顯示應用程式圖示"
+      },
+      "connection": {
+        "title": "連接",
+        "default_protocol": "預設協定",
+        "default_protocol_desc": "新會話的預設連接類型",
+        "timeout": "連接逾時",
+        "timeout_desc": "逾時前等待的秒數",
+        "keep_alive": "保活間隔",
+        "keep_alive_desc": "發送保活封包以防止斷開連接",
+        "auto_reconnect": "自動重連",
+        "auto_reconnect_desc": "連接遺失時自動重連",
+        "max_reconnect": "最大重連嘗試次數",
+        "max_reconnect_desc": "放棄前的重試次數"
+      },
+      "display": {
+        "title": "顯示",
+        "window_mode": "預設視窗模式",
+        "window_mode_desc": "遠端會話的顯示方式",
+        "show_status": "顯示連接狀態",
+        "show_status_desc": "顯示連接品質指示器",
+        "modes": {
+          "windowed": "視窗模式",
+          "fullscreen": "全螢幕模式",
+          "borderless": "無邊框"
+        }
+      },
+      "security": {
+        "title": "安全性",
+        "remember_passwords": "記住密碼",
+        "remember_passwords_desc": "儲存憑證以快速存取",
+        "lock_minimize": "最小化時鎖定",
+        "lock_minimize_desc": "應用程式恢復時需要密碼",
+        "clear_clipboard": "中斷連線時清除剪貼簿",
+        "clear_clipboard_desc": "會話結束時移除複製的資料",
+        "require_password": "啟動時需要密碼",
+        "require_password_desc": "使用主密碼保護應用程式"
+      },
+      "notifications": {
+        "title": "通知",
+        "enable": "啟用通知",
+        "enable_desc": "顯示桌面通知",
+        "on_connect": "連接時通知",
+        "on_connect_desc": "會話連接時顯示通知",
+        "on_disconnect": "中斷連線時通知",
+        "on_disconnect_desc": "會話中斷連線時顯示通知",
+        "play_sounds": "播放聲音",
+        "play_sounds_desc": "事件的音訊回饋"
+      },
+      "about": {
+        "title": "關於",
+        "version": "版本",
+        "framework": "框架",
+        "ui_library": "UI 函式庫",
+        "github": "GitHub",
+        "documentation": "文件",
+        "feedback": "回饋"
+      }
+    }
+  },
+  "components": {
+    "add_server": {
+      "title": "新建會話",
+      "protocol": "協定",
+      "display_name": "顯示名稱",
+      "display_name_placeholder": "我的伺服器",
+      "host": "主機",
+      "host_placeholder": "192.168.1.100",
+      "port": "連接埠",
+      "username": "使用者名稱",
+      "username_placeholder": "Administrator",
+      "password": "密碼",
+      "password_placeholder": "******",
+      "cancel": "取消",
+      "save": "儲存",
+      "failed": "新增伺服器失敗"
+    }
+  }
+}

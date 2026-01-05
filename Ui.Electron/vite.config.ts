@@ -8,9 +8,7 @@ import ui from '@nuxt/ui/vite'
 export default defineConfig({
   plugins: [
     vue(),
-    ui({
-      router: false
-    }),
+    ui(),
     electron([
       {
         // Main-Process entry file of the Electron App.

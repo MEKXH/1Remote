@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import os from 'os';
 import squirrelStartup from 'electron-squirrel-startup';
 import { IpcClient } from './ipc-client';
 
@@ -51,6 +52,15 @@ ipcMain.handle('backend:getServers', async () => {
   }
 });
 
+ipcMain.handle('backend:getTags', async () => {
+  try {
+    return await backendClient.send('getTags');
+  } catch (error) {
+    console.error('Failed to get tags from backend:', error);
+    return [];
+  }
+});
+
 ipcMain.handle('backend:connect', async (_, serverId: string) => {
   try {
     return await backendClient.send('connect', serverId);
@@ -60,9 +70,131 @@ ipcMain.handle('backend:connect', async (_, serverId: string) => {
   }
 });
 
+ipcMain.handle('backend:addServer', async (_, server: any) => {
+  try {
+    // If params is an object, IpcClient will serialize it as JSON object in 'params' field.
+    // Backend receives it as JObject (if using Newtonsoft) and .ToString() converts it back to JSON string.
+    return await backendClient.send('addServer', server);
+  } catch (error) {
+    console.error('Failed to add server:', error);
+    return { IsSuccess: false, ErrorInfo: error instanceof Error ? error.message : String(error) };
+  }
+});
+
+ipcMain.handle('backend:deleteServer', async (_, serverId: string) => {
+  try {
+    return await backendClient.send('deleteServer', serverId);
+  } catch (error) {
+    console.error('Failed to delete server:', error);
+    return { IsSuccess: false, ErrorInfo: error instanceof Error ? error.message : String(error) };
+  }
+});
+
+ipcMain.handle('backend:duplicateServer', async (_, serverId: string) => {
+  try {
+    return await backendClient.send('duplicateServer', serverId);
+  } catch (error) {
+    console.error('Failed to duplicate server:', error);
+    return { IsSuccess: false, ErrorInfo: error instanceof Error ? error.message : String(error) };
+  }
+});
+
+ipcMain.handle('backend:getServer', async (_, serverId: string) => {
+  try {
+    return await backendClient.send('getServer', serverId);
+  } catch (error) {
+    console.error(`Failed to get server ${serverId}:`, error);
+    return null;
+  }
+});
+
+ipcMain.handle('backend:getDashboardStats', async () => {
+  try {
+    return await backendClient.send('getDashboardStats');
+  } catch (error) {
+    console.error('Failed to get dashboard stats:', error);
+    return { ActiveSessions: 0, TotalServers: 0, Favorites: 0, Recent: 0 };
+  }
+});
+
+ipcMain.handle('backend:updateServer', async (_, serverId: string, server: any) => {
+  try {
+    return await backendClient.send('updateServer', { serverId, server });
+  } catch (error) {
+    console.error(`Failed to update server ${serverId}:`, error);
+    return { IsSuccess: false, ErrorInfo: error instanceof Error ? error.message : String(error) };
+  }
+});
+
+ipcMain.handle('backend:getGeneralSettings', async () => {
+  try {
+    return await backendClient.send('getGeneralSettings');
+  } catch (error) {
+    console.error('Failed to get general settings:', error);
+    return null;
+  }
+});
+
+ipcMain.handle('backend:updateGeneralSettings', async (_, settings: any) => {
+  try {
+    return await backendClient.send('updateGeneralSettings', settings);
+  } catch (error) {
+    console.error('Failed to update general settings:', error);
+    return { IsSuccess: false, ErrorInfo: error instanceof Error ? error.message : String(error) };
+  }
+});
+
+ipcMain.handle('backend:getThemeSettings', async () => {
+  try {
+    return await backendClient.send('getThemeSettings');
+  } catch (error) {
+    console.error('Failed to get theme settings:', error);
+    return null;
+  }
+});
+
+ipcMain.handle('backend:updateThemeSettings', async (_, settings: any) => {
+  try {
+    return await backendClient.send('updateThemeSettings', settings);
+  } catch (error) {
+    console.error('Failed to update theme settings:', error);
+    return { IsSuccess: false, ErrorInfo: error instanceof Error ? error.message : String(error) };
+  }
+});
+
+ipcMain.handle('os:getNetworkInterfaces', () => {
+  return os.networkInterfaces();
+});
+
+// Window Controls
+ipcMain.on('window:minimize', () => {
+  const win = BrowserWindow.getFocusedWindow();
+  win?.minimize();
+});
+
+ipcMain.on('window:maximize', () => {
+  const win = BrowserWindow.getFocusedWindow();
+  if (win?.isMaximized()) {
+    win.unmaximize();
+  } else {
+    win?.maximize();
+  }
+});
+
+ipcMain.on('window:close', () => {
+  const win = BrowserWindow.getFocusedWindow();
+  win?.close();
+});
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
-app.on('ready', createWindow);
+app.on('ready', () => {
+  console.log('--------------------------------------------------');
+  console.log('1Remote Electron UI is starting...');
+  console.log('Build Time:', new Date().toLocaleString());
+  console.log('--------------------------------------------------');
+  createWindow();
+});
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
