@@ -35,6 +35,9 @@
       "clear_filters": "清除筛选",
       "connection_error": "连接错误：",
       "backend_error": "请确保 1Remote 后端正在运行。",
+      "active_sessions_title": "活跃会话",
+      "reconnect": "重连",
+      "disconnect": "断开",
       "sort": {
         "label": "排序",
         "by": "排序方式",

@@ -34,6 +34,9 @@
       "empty_server": "未找到伺服器。請啟動 WPF 應用程式以填充資料。",
       "connection_error": "連接錯誤：",
       "backend_error": "請確保 1Remote 後端正在執行。",
+      "active_sessions_title": "進行中的會話",
+      "reconnect": "重新連接",
+      "disconnect": "中斷連接",
       "sort": {
         "label": "排序",
         "by": "排序方式",

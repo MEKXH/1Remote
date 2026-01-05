@@ -34,6 +34,9 @@
       "empty_server": "サーバーが見つかりません。WPFアプリを起動してデータを入力してください。",
       "connection_error": "接続エラー：",
       "backend_error": "1Remoteバックエンドが実行されていることを確認してください。",
+      "active_sessions_title": "アクティブセッション",
+      "reconnect": "再接続",
+      "disconnect": "切断",
       "sort": {
         "label": "並び替え",
         "by": "並び替え基準",

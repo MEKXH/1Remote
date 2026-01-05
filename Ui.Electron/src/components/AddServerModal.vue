@@ -101,7 +101,9 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <UModal v-model:open="open" :title="editingId ? t('pages.dashboard.context_menu.edit') : t('components.add_server.title')" :ui="{ footer: 'justify-end' }">
+  <UModal v-model:open="open"
+    :title="editingId ? t('pages.dashboard.context_menu.edit') : t('components.add_server.title')"
+    :ui="{ footer: 'justify-end' }">
     <template #body>
       <form @submit.prevent="handleSubmit" class="space-y-4">
         <UFormField :label="t('components.add_server.protocol')" name="protocol">
@@ -109,7 +111,8 @@ const handleSubmit = async () => {
         </UFormField>
 
         <UFormField :label="t('components.add_server.display_name')" name="displayName" required>
-          <UInput v-model="form.DisplayName" :placeholder="t('components.add_server.display_name_placeholder')" autofocus />
+          <UInput v-model="form.DisplayName" :placeholder="t('components.add_server.display_name_placeholder')"
+            autofocus />
         </UFormField>
 
         <div class="grid grid-cols-3 gap-4">
@@ -126,7 +129,8 @@ const handleSubmit = async () => {
         </UFormField>
 
         <UFormField :label="t('components.add_server.password')" name="password">
-          <UInput v-model="form.Password" type="password" :placeholder="t('components.add_server.password_placeholder')" />
+          <UInput v-model="form.Password" type="password"
+            :placeholder="t('components.add_server.password_placeholder')" />
         </UFormField>
 
         <div v-if="error" class="text-red-500 text-sm">

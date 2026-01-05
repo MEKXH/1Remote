@@ -84,14 +84,16 @@ onBeforeUnmount(() => {
   <div class="p-8 max-w-7xl mx-auto">
     <div class="flex justify-between items-end mb-8">
       <div>
-        <h1 class="text-3xl font-extrabold tracking-tight mb-1 text-zinc-900 dark:text-zinc-50">{{ t('pages.history.title') }}</h1>
+        <h1 class="text-3xl font-extrabold tracking-tight mb-1 text-zinc-900 dark:text-zinc-50">{{
+          t('pages.history.title') }}</h1>
         <p class="text-zinc-500 dark:text-zinc-400">{{ t('pages.history.subtitle') }}</p>
       </div>
-      <UButton icon="i-lucide-refresh-cw" variant="outline" :label="t('common.refresh')" color="neutral" @click="fetchServers" :loading="loading" />
+      <UButton icon="i-lucide-refresh-cw" variant="outline" :label="t('common.refresh')" color="neutral"
+        @click="fetchServers" :loading="loading" />
     </div>
 
     <div v-if="loading" class="space-y-4">
-       <USkeleton v-for="i in 3" :key="i" class="h-16 w-full" />
+      <USkeleton v-for="i in 3" :key="i" class="h-16 w-full" />
     </div>
 
     <div v-else-if="error" class="p-4 border border-red-200 bg-red-50 text-red-600 rounded-lg">
@@ -99,9 +101,10 @@ onBeforeUnmount(() => {
       <p>{{ error }}</p>
     </div>
 
-    <div v-else-if="historyServers.length === 0" class="flex flex-col items-center justify-center py-20 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl">
-       <UIcon name="i-lucide-history" class="w-12 h-12 text-zinc-300 mb-4" />
-       <p class="text-zinc-500">{{ t('pages.history.empty') }}</p>
+    <div v-else-if="historyServers.length === 0"
+      class="flex flex-col items-center justify-center py-20 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl">
+      <UIcon name="i-lucide-history" class="w-12 h-12 text-zinc-300 mb-4" />
+      <p class="text-zinc-500">{{ t('pages.history.empty') }}</p>
     </div>
 
     <div v-else class="space-y-6">
@@ -112,15 +115,13 @@ onBeforeUnmount(() => {
           </h2>
         </div>
         <div class="space-y-2">
-          <UCard
-            v-for="session in activeSessions"
-            :key="session.ConnectionId"
+          <UCard v-for="session in activeSessions" :key="session.ConnectionId"
             class="group hover:ring-2 hover:ring-primary-500 transition-all duration-300"
-            :ui="{ body: 'p-3 flex items-center justify-between' }"
-          >
+            :ui="{ body: 'p-3 flex items-center justify-between' }">
             <div class="flex items-center gap-4">
               <div class="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-500">
-                <UIcon :name="session.Protocol.toLowerCase().includes('ssh') ? 'i-lucide-terminal' : 'i-lucide-monitor'" class="w-5 h-5" />
+                <UIcon :name="session.Protocol.toLowerCase().includes('ssh') ? 'i-lucide-terminal' : 'i-lucide-monitor'"
+                  class="w-5 h-5" />
               </div>
               <div>
                 <div class="font-bold text-zinc-900 dark:text-zinc-100">{{ session.DisplayName }}</div>
@@ -134,23 +135,22 @@ onBeforeUnmount(() => {
 
             <div class="flex items-center gap-2">
               <UBadge size="xs" variant="subtle">{{ session.Protocol }}</UBadge>
-              <UButton size="xs" variant="outline" color="neutral" :label="t('pages.history.reconnect', 'Reconnect')" @click="handleReconnect(session.ConnectionId)" />
-              <UButton size="xs" color="error" variant="outline" :label="t('pages.history.disconnect', 'Disconnect')" @click="handleCloseSession(session.ConnectionId)" />
+              <UButton size="xs" variant="outline" color="neutral" :label="t('pages.history.reconnect', 'Reconnect')"
+                @click="handleReconnect(session.ConnectionId)" />
+              <UButton size="xs" color="error" variant="outline" :label="t('pages.history.disconnect', 'Disconnect')"
+                @click="handleCloseSession(session.ConnectionId)" />
             </div>
           </UCard>
         </div>
       </div>
 
-      <UCard 
-        v-for="server in historyServers" 
-        :key="server.Id"
+      <UCard v-for="server in historyServers" :key="server.Id"
         class="group hover:ring-2 hover:ring-primary-500 transition-all duration-300 cursor-pointer"
-        @click="handleConnect(server.Id)"
-        :ui="{ body: 'p-3 flex items-center justify-between' }"
-      >
+        @click="handleConnect(server.Id)" :ui="{ body: 'p-3 flex items-center justify-between' }">
         <div class="flex items-center gap-4">
           <div class="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-500">
-            <UIcon :name="server.Protocol.toLowerCase().includes('ssh') ? 'i-lucide-terminal' : 'i-lucide-monitor'" class="w-5 h-5" />
+            <UIcon :name="server.Protocol.toLowerCase().includes('ssh') ? 'i-lucide-terminal' : 'i-lucide-monitor'"
+              class="w-5 h-5" />
           </div>
           <div>
             <div class="font-bold text-zinc-900 dark:text-zinc-100">{{ server.DisplayName }}</div>
@@ -164,13 +164,9 @@ onBeforeUnmount(() => {
 
         <div class="flex items-center gap-2">
           <UBadge size="xs" variant="subtle">{{ server.Protocol }}</UBadge>
-          <UButton 
-            :icon="isFavorite(server.Id) ? 'i-lucide-star' : 'i-lucide-star'" 
-            :color="isFavorite(server.Id) ? 'yellow' : 'neutral'" 
-            variant="ghost" 
-            size="sm" 
-            @click.stop="toggleFavorite(server.Id)"
-          />
+          <UButton :icon="isFavorite(server.Id) ? 'i-lucide-star' : 'i-lucide-star'"
+            :color="isFavorite(server.Id) ? 'yellow' : 'neutral'" variant="ghost" size="sm"
+            @click.stop="toggleFavorite(server.Id)" />
           <UButton icon="i-lucide-chevron-right" variant="ghost" color="neutral" size="sm" />
         </div>
       </UCard>

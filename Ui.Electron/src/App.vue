@@ -101,15 +101,13 @@ const handleClose = () => {
   <UApp>
     <UDashboardGroup>
       <!-- Main Sidebar -->
-      <UDashboardSidebar
-        v-model:collapsed="collapsed"
-        collapsible
+      <UDashboardSidebar v-model:collapsed="collapsed" collapsible
         class="bg-zinc-50 dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-800 transition-[width] duration-200 ease-out"
-        :style="{ width: collapsed ? '64px' : '200px' }"
-      >
+        :style="{ width: collapsed ? '64px' : '200px' }">
         <template #header="{ collapsed: sidebarCollapsed }">
           <!-- Header Container: Flex layout with smooth transitions -->
-          <div class="flex items-center h-14 w-full px-2 transition-all duration-200 ease-out" :class="sidebarCollapsed ? 'justify-center' : 'justify-start gap-3'">
+          <div class="flex items-center h-14 w-full px-2 transition-all duration-200 ease-out"
+            :class="sidebarCollapsed ? 'justify-center' : 'justify-start gap-3'">
             <!-- Logo -->
             <div class="p-1.5 rounded-lg bg-primary-500 text-white flex items-center justify-center w-8 h-8 shrink-0">
               <UIcon name="i-lucide-layers" class="w-5 h-5" />
@@ -118,8 +116,7 @@ const handleClose = () => {
             <!-- Title: Smooth fade transition -->
             <span
               class="font-bold tracking-tight text-lg whitespace-nowrap transition-all duration-200 ease-out origin-left"
-              :class="sidebarCollapsed ? 'opacity-0 scale-95 w-0 overflow-hidden' : 'opacity-100 scale-100'"
-            >
+              :class="sidebarCollapsed ? 'opacity-0 scale-95 w-0 overflow-hidden' : 'opacity-100 scale-100'">
               {{ t('app.title') }}
             </span>
           </div>
@@ -127,38 +124,25 @@ const handleClose = () => {
 
         <template #default="{ collapsed: sidebarCollapsed }">
           <div class="flex flex-col gap-2 flex-1 h-full">
-             <UNavigationMenu
-              :items="items[0]"
-              orientation="vertical"
-              :collapsed="sidebarCollapsed"
-              :ui="{
-                root: 'gap-2',
-                link: 'py-2.5 text-sm before:rounded-sm',
-                linkLeadingIcon: 'size-5'
-              }"
-            />
+            <UNavigationMenu :items="items[0]" orientation="vertical" :collapsed="sidebarCollapsed" :ui="{
+              root: 'gap-2',
+              link: 'py-2.5 text-sm before:rounded-sm',
+              linkLeadingIcon: 'size-5'
+            }" />
 
             <div class="mt-auto flex flex-col gap-2">
               <!-- Sidebar Toggle Button (Using Official Component) -->
-              <UDashboardSidebarCollapse
-                 variant="ghost"
-                 color="neutral"
-                 class="transition-all duration-200 ease-out mx-4 collapse-btn"
-                 :class="sidebarCollapsed ? 'w-10 h-10 p-0 justify-center mx-auto' : 'py-2.5 justify-start'"
-              />
+              <UDashboardSidebarCollapse variant="ghost" color="neutral"
+                class="transition-all duration-200 ease-out mx-4 collapse-btn"
+                :class="sidebarCollapsed ? 'w-10 h-10 p-0 justify-center mx-auto' : 'py-2.5 justify-start'" />
 
               <div class="h-px bg-zinc-200 dark:bg-zinc-800 mx-2 my-1"></div>
 
-              <UNavigationMenu
-                :items="items[1]"
-                orientation="vertical"
-                :collapsed="sidebarCollapsed"
-                :ui="{
-                  root: 'gap-2',
-                  link: 'py-2.5 text-sm before:rounded-sm',
-                  linkLeadingIcon: 'size-5'
-                }"
-              />
+              <UNavigationMenu :items="items[1]" orientation="vertical" :collapsed="sidebarCollapsed" :ui="{
+                root: 'gap-2',
+                link: 'py-2.5 text-sm before:rounded-sm',
+                linkLeadingIcon: 'size-5'
+              }" />
             </div>
           </div>
         </template>
@@ -171,10 +155,9 @@ const handleClose = () => {
       <!-- Main Content Panel -->
       <UDashboardPanel>
         <template #header>
-          <div 
+          <div
             class="h-12 flex items-center justify-between px-4 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 select-none shrink-0"
-            style="-webkit-app-region: drag"
-          >
+            style="-webkit-app-region: drag">
             <!-- Left: Title -->
             <div class="flex items-center gap-2">
               <span class="font-semibold text-zinc-900 dark:text-zinc-100">
@@ -185,47 +168,27 @@ const handleClose = () => {
             <!-- Right: Tools and Window Controls -->
             <div class="flex items-center gap-1 h-full" style="-webkit-app-region: no-drag">
               <!-- Theme Toggle -->
-              <UButton
-                :icon="isDark ? 'i-lucide-moon' : 'i-lucide-sun'"
-                variant="ghost"
-                color="neutral"
-                size="sm"
-                class="rounded-lg h-8 w-8 flex items-center justify-center"
-                @click="isDark = !isDark"
-              />
+              <UButton :icon="isDark ? 'i-lucide-moon' : 'i-lucide-sun'" variant="ghost" color="neutral" size="sm"
+                class="rounded-lg h-8 w-8 flex items-center justify-center" @click="isDark = !isDark" />
 
-              <div class="h-4 w-[1px] bg-zinc-200 dark:bg-zinc-800 mx-1"></div>
+              <div class="h-4 w-px bg-zinc-200 dark:bg-zinc-800 mx-1"></div>
 
-              <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 font-medium whitespace-nowrap">v1.3.0</span>
-              
-              <div class="h-4 w-[1px] bg-zinc-200 dark:bg-zinc-800 mx-1"></div>
-              
+              <span
+                class="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 font-medium whitespace-nowrap">v1.3.0</span>
+
+              <div class="h-4 w-px bg-zinc-200 dark:bg-zinc-800 mx-1"></div>
+
               <!-- Window Controls (Electron Custom) -->
               <div class="flex items-center -mr-4 h-full">
-                <UButton 
-                  icon="i-lucide-minus" 
-                  variant="ghost" 
-                  color="neutral" 
-                  size="sm" 
-                  class="rounded-none h-full w-12 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center" 
-                  @click="handleMinimize"
-                />
-                <UButton 
-                  icon="i-lucide-square" 
-                  variant="ghost" 
-                  color="neutral" 
-                  size="sm" 
-                  class="rounded-none h-full w-12 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center" 
-                  @click="handleMaximize"
-                />
-                <UButton 
-                  icon="i-lucide-x" 
-                  variant="ghost" 
-                  color="neutral" 
-                  size="sm" 
-                  class="rounded-none h-full w-12 hover:bg-red-500 hover:text-white flex items-center justify-center" 
-                  @click="handleClose"
-                />
+                <UButton icon="i-lucide-minus" variant="ghost" color="neutral" size="sm"
+                  class="rounded-none h-full w-12 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center"
+                  @click="handleMinimize" />
+                <UButton icon="i-lucide-square" variant="ghost" color="neutral" size="sm"
+                  class="rounded-none h-full w-12 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center"
+                  @click="handleMaximize" />
+                <UButton icon="i-lucide-x" variant="ghost" color="neutral" size="sm"
+                  class="rounded-none h-full w-12 hover:bg-red-500 hover:text-white flex items-center justify-center"
+                  @click="handleClose" />
               </div>
             </div>
           </div>
@@ -262,16 +225,20 @@ const handleClose = () => {
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #d4d4d8;
   border-radius: 10px;
 }
+
 .dark ::-webkit-scrollbar-thumb {
   background: #27272a;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #a1a1aa;
 }
@@ -296,6 +263,4 @@ const handleClose = () => {
   inset: 0 !important;
   border-radius: 0.375rem !important;
 }
-
 </style>
-

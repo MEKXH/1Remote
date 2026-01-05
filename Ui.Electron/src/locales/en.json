@@ -35,6 +35,9 @@
       "clear_filters": "Clear Filters",
       "connection_error": "Connection Error:",
       "backend_error": "Please ensure the 1Remote backend is running.",
+      "active_sessions_title": "Active sessions",
+      "reconnect": "Reconnect",
+      "disconnect": "Disconnect",
       "sort": {
         "label": "Sort",
         "by": "Sort By",

@@ -503,6 +503,10 @@ namespace _1RM.View.Host.ProtocolHosts
                     {
                         SimpleLogHelper.Debug($"new _process.MainWindowHandle = {_process.MainWindowHandle}");
                         SetExeWindowStyle();
+                        if (Status != ProtocolHostStatus.Connected)
+                        {
+                            Execute.OnUIThread(() => { Status = ProtocolHostStatus.Connected; });
+                        }
                     }
                 }
                 catch (Exception e)
