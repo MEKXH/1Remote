@@ -54,11 +54,34 @@ export interface IDashboardStats {
     Recent: number;
 }
 
+export interface IDataSourceStatus {
+    DataSourceName: string;
+    DatabaseType: string;
+    Status: string;
+    StatusInfo: string;
+    Path: string;
+    IsWritable: boolean;
+}
+
+export interface ISessionDto {
+    ConnectionId: string;
+    ServerId: string;
+    DisplayName: string;
+    SubTitle: string;
+    Protocol: string;
+    Status: string;
+}
+
 export interface IElectronAPI {
     getServers: () => Promise<IServerDto[]>;
     getServer: (serverId: string) => Promise<IServerCreateDto | null>;
     getTags: () => Promise<string[]>;
+    getLocalDataSourceStatus: () => Promise<IDataSourceStatus | null>;
     getDashboardStats: () => Promise<IDashboardStats>;
+    reloadServers: () => Promise<IResult>;
+    getActiveSessions: () => Promise<ISessionDto[]>;
+    closeSession: (connectionId: string) => Promise<IResult>;
+    reconnectSession: (connectionId: string) => Promise<IResult>;
     connect: (serverId: string) => Promise<boolean>;
     addServer: (server: IServerCreateDto) => Promise<IResult>;
     deleteServer: (serverId: string) => Promise<IResult>;

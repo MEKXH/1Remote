@@ -7,9 +7,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     getTags: () => ipcRenderer.invoke('backend:getTags'),
 
+    getLocalDataSourceStatus: () => ipcRenderer.invoke('backend:getLocalDataSourceStatus'),
+
     getServer: (serverId: string) => ipcRenderer.invoke('backend:getServer', serverId),
 
     getDashboardStats: () => ipcRenderer.invoke('backend:getDashboardStats'),
+
+    reloadServers: () => ipcRenderer.invoke('backend:reloadServers'),
+
+    getActiveSessions: () => ipcRenderer.invoke('backend:getActiveSessions'),
+
+    closeSession: (connectionId: string) => ipcRenderer.invoke('backend:closeSession', connectionId),
+
+    reconnectSession: (connectionId: string) => ipcRenderer.invoke('backend:reconnectSession', connectionId),
 
     connect: (serverId: string) => ipcRenderer.invoke('backend:connect', serverId),
 

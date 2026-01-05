@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { IServerDto } from '../electron-api'
+import type { IServerDto, ISessionDto } from '../electron-api'
 import { useFavorites } from '../composables/useFavorites'
 
 const { t } = useI18n()
 const servers = ref<IServerDto[]>([])
+const activeSessions = ref<ISessionDto[]>([])
 const loading = ref(true)
 const error = ref('')
+const refreshTimer = ref<number | null>(null)
 const { isFavorite, toggleFavorite } = useFavorites()
 
 const historyServers = computed(() => {
@@ -16,21 +18,44 @@ const historyServers = computed(() => {
     .sort((a, b) => new Date(b.LastConnectTime).getTime() - new Date(a.LastConnectTime).getTime())
 })
 
-const fetchServers = async () => {
-  loading.value = true
-  error.value = ''
+const fetchServers = async (options: { withLoading?: boolean; resetError?: boolean } = {}) => {
+  const withLoading = options.withLoading !== false
+  const resetError = options.resetError !== false
+  if (withLoading) {
+    loading.value = true
+  }
+  if (resetError) {
+    error.value = ''
+  }
   try {
-    servers.value = await window.electronAPI.getServers()
+    const [serversData, sessionsData] = await Promise.all([
+      window.electronAPI.getServers(),
+      window.electronAPI.getActiveSessions()
+    ])
+    servers.value = serversData
+    activeSessions.value = sessionsData
   } catch (err: any) {
     console.error('Failed to fetch servers:', err)
     error.value = err.message || t('common.unknown_error')
   } finally {
-    loading.value = false
+    if (withLoading) {
+      loading.value = false
+    }
   }
 }
 
 const handleConnect = async (serverId: string) => {
   await window.electronAPI.connect(serverId)
+}
+
+const handleReconnect = async (connectionId: string) => {
+  await window.electronAPI.reconnectSession(connectionId)
+  await fetchServers()
+}
+
+const handleCloseSession = async (connectionId: string) => {
+  await window.electronAPI.closeSession(connectionId)
+  await fetchServers()
 }
 
 const formatDate = (dateStr: string) => {
@@ -39,6 +64,19 @@ const formatDate = (dateStr: string) => {
 
 onMounted(() => {
   fetchServers()
+  refreshTimer.value = window.setInterval(() => {
+    if (loading.value) {
+      return
+    }
+    fetchServers({ withLoading: false, resetError: false })
+  }, 2000)
+})
+
+onBeforeUnmount(() => {
+  if (refreshTimer.value) {
+    window.clearInterval(refreshTimer.value)
+    refreshTimer.value = null
+  }
 })
 </script>
 
@@ -66,7 +104,43 @@ onMounted(() => {
        <p class="text-zinc-500">{{ t('pages.history.empty') }}</p>
     </div>
 
-    <div v-else class="space-y-2">
+    <div v-else class="space-y-6">
+      <div v-if="activeSessions.length > 0">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-sm font-semibold text-zinc-600 dark:text-zinc-300">
+            {{ t('pages.history.active_sessions', 'Active sessions') }} ({{ activeSessions.length }})
+          </h2>
+        </div>
+        <div class="space-y-2">
+          <UCard
+            v-for="session in activeSessions"
+            :key="session.ConnectionId"
+            class="group hover:ring-2 hover:ring-primary-500 transition-all duration-300"
+            :ui="{ body: 'p-3 flex items-center justify-between' }"
+          >
+            <div class="flex items-center gap-4">
+              <div class="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-500">
+                <UIcon :name="session.Protocol.toLowerCase().includes('ssh') ? 'i-lucide-terminal' : 'i-lucide-monitor'" class="w-5 h-5" />
+              </div>
+              <div>
+                <div class="font-bold text-zinc-900 dark:text-zinc-100">{{ session.DisplayName }}</div>
+                <div class="text-xs text-zinc-500 flex items-center gap-2">
+                  <span>{{ session.SubTitle }}</span>
+                  <span class="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700"></span>
+                  <span>{{ session.Status }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <UBadge size="xs" variant="subtle">{{ session.Protocol }}</UBadge>
+              <UButton size="xs" variant="outline" color="neutral" :label="t('pages.history.reconnect', 'Reconnect')" @click="handleReconnect(session.ConnectionId)" />
+              <UButton size="xs" color="error" variant="outline" :label="t('pages.history.disconnect', 'Disconnect')" @click="handleCloseSession(session.ConnectionId)" />
+            </div>
+          </UCard>
+        </div>
+      </div>
+
       <UCard 
         v-for="server in historyServers" 
         :key="server.Id"

@@ -11,9 +11,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using _1RM.Bridge.Models;
 using _1RM.Model;
+using _1RM.Model.Protocol.Base;
 using _1RM.Service;
 using _1RM.Service.DataSource;
 using _1RM.Service.DataSource.DAO;
+using _1RM.Service.DataSource.Model;
 using _1RM.Utils;
 using Newtonsoft.Json;
 using Shawn.Utils;
@@ -45,32 +47,59 @@ namespace _1RM.Bridge
         {
             while (!token.IsCancellationRequested)
             {
+                var server = new NamedPipeServerStream(
+                    _pipeName,
+                    PipeDirection.InOut,
+                    NamedPipeServerStream.MaxAllowedServerInstances,
+                    PipeTransmissionMode.Byte,
+                    PipeOptions.Asynchronous);
+
                 try
                 {
-                    using var server = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
                     await server.WaitForConnectionAsync(token);
-
-                    using var reader = new StreamReader(server, Encoding.UTF8);
-                    using var writer = new StreamWriter(server, Encoding.UTF8) { AutoFlush = true };
-
-                    while (server.IsConnected && !token.IsCancellationRequested)
-                    {
-                        var line = await reader.ReadLineAsync();
-                        if (string.IsNullOrEmpty(line)) break;
-
-                        var response = HandleRequest(line);
-                        await writer.WriteLineAsync(JsonConvert.SerializeObject(response));
-                    }
+                    _ = Task.Run(() => HandleClientAsync(server, token), token);
                 }
                 catch (OperationCanceledException)
                 {
+                    server.Dispose();
                     break;
                 }
                 catch (Exception ex)
                 {
+                    server.Dispose();
                     SimpleLogHelper.Error(ex);
                     await Task.Delay(1000, token);
                 }
+            }
+        }
+
+        private async Task HandleClientAsync(NamedPipeServerStream server, CancellationToken token)
+        {
+            try
+            {
+                using var reader = new StreamReader(server, Encoding.UTF8);
+                using var writer = new StreamWriter(server, Encoding.UTF8) { AutoFlush = true };
+
+                while (server.IsConnected && !token.IsCancellationRequested)
+                {
+                    var line = await reader.ReadLineAsync();
+                    if (string.IsNullOrEmpty(line)) break;
+
+                    var response = HandleRequest(line);
+                    await writer.WriteLineAsync(JsonConvert.SerializeObject(response));
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // ignore on shutdown
+            }
+            catch (Exception ex)
+            {
+                SimpleLogHelper.Error(ex);
+            }
+            finally
+            {
+                server.Dispose();
             }
         }
 
@@ -126,6 +155,21 @@ namespace _1RM.Bridge
                         break;
                     case "getTags":
                         result = GetTags();
+                        break;
+                    case "getLocalDataSourceStatus":
+                        result = GetLocalDataSourceStatus();
+                        break;
+                    case "reloadServers":
+                        result = ReloadServers();
+                        break;
+                    case "getActiveSessions":
+                        result = GetActiveSessions();
+                        break;
+                    case "closeSession":
+                        result = CloseSession(request.Params?.ToString());
+                        break;
+                    case "reconnectSession":
+                        result = ReconnectSession(request.Params?.ToString());
                         break;
                     default:
                         return new IpcResponse { Id = request.Id, Error = $"Method '{request.Method}' not found" };
@@ -260,9 +304,6 @@ namespace _1RM.Bridge
             return Result.Fail("Invalid protocol or protocol creation failed");
         }
 
-            return Result.Fail("Server not found");
-        }
-
         private ServerCreateDto? GetServer(string? serverId)
         {
             if (string.IsNullOrEmpty(serverId)) return null;
@@ -273,7 +314,7 @@ namespace _1RM.Bridge
                 var protocol = vm.Server;
                 var dto = new ServerCreateDto
                 {
-                    Protocol = protocol.ProtocolName,
+                    Protocol = protocol.Protocol,
                     DisplayName = protocol.DisplayName,
                 };
 
@@ -429,6 +470,78 @@ namespace _1RM.Bridge
                 Favorites = 0, // Handled by frontend for now
                 Recent = globalData.VmItemList.Count(x => x.LastConnectTime > DateTime.Now.AddDays(-7))
             };
+        }
+
+        private DataSourceStatusDto? GetLocalDataSourceStatus()
+        {
+            var dataSourceService = IoC.Get<DataSourceService>();
+            var localSource = dataSourceService.LocalDataSource;
+            if (localSource == null) return null;
+
+            var path = localSource is SqliteSource sqlite ? sqlite.Path : string.Empty;
+            return new DataSourceStatusDto
+            {
+                DataSourceName = localSource.DataSourceName,
+                DatabaseType = localSource.DatabaseType.ToString(),
+                Status = localSource.Status.ToString(),
+                StatusInfo = localSource.StatusInfo,
+                Path = path,
+                IsWritable = localSource.IsWritable
+            };
+        }
+
+        private Result ReloadServers()
+        {
+            var dataSourceService = IoC.Get<DataSourceService>();
+            var localSource = dataSourceService.LocalDataSource;
+            if (localSource == null)
+            {
+                return Result.Fail("Local data source not found");
+            }
+
+            var globalData = IoC.Get<GlobalData>();
+            globalData.ReloadAll(true);
+
+            if (localSource.Status != EnumDatabaseStatus.OK)
+            {
+                return Result.Fail(localSource.Status.GetErrorInfo());
+            }
+
+            return Result.Success();
+        }
+
+        private List<SessionDto> GetActiveSessions()
+        {
+            var sessionControl = IoC.Get<SessionControlService>();
+            return sessionControl.ConnectionId2Hosts.Values.Select(host => new SessionDto
+            {
+                ConnectionId = host.ConnectionId,
+                ServerId = host.ProtocolServer.Id,
+                DisplayName = host.ProtocolServer.DisplayName,
+                SubTitle = host.ProtocolServer.SubTitle,
+                Protocol = host.ProtocolServer.Protocol,
+                Status = host.Status.ToString()
+            }).ToList();
+        }
+
+        private Result CloseSession(string? connectionId)
+        {
+            if (string.IsNullOrEmpty(connectionId)) return Result.Fail("Connection ID is empty");
+            var sessionControl = IoC.Get<SessionControlService>();
+            sessionControl.CloseProtocolHostAsync(connectionId);
+            return Result.Success();
+        }
+
+        private Result ReconnectSession(string? connectionId)
+        {
+            if (string.IsNullOrEmpty(connectionId)) return Result.Fail("Connection ID is empty");
+            var sessionControl = IoC.Get<SessionControlService>();
+            if (sessionControl.ConnectionId2Hosts.TryGetValue(connectionId, out var host))
+            {
+                host.ReConn();
+                return Result.Success();
+            }
+            return Result.Fail("Session not found");
         }
 
         private int GetCidrFromSubnetMask(IPAddress subnetMask)

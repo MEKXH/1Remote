@@ -61,6 +61,15 @@ ipcMain.handle('backend:getTags', async () => {
   }
 });
 
+ipcMain.handle('backend:getLocalDataSourceStatus', async () => {
+  try {
+    return await backendClient.send('getLocalDataSourceStatus');
+  } catch (error) {
+    console.error('Failed to get local data source status:', error);
+    return null;
+  }
+});
+
 ipcMain.handle('backend:connect', async (_, serverId: string) => {
   try {
     return await backendClient.send('connect', serverId);
@@ -114,6 +123,42 @@ ipcMain.handle('backend:getDashboardStats', async () => {
   } catch (error) {
     console.error('Failed to get dashboard stats:', error);
     return { ActiveSessions: 0, TotalServers: 0, Favorites: 0, Recent: 0 };
+  }
+});
+
+ipcMain.handle('backend:reloadServers', async () => {
+  try {
+    return await backendClient.send('reloadServers');
+  } catch (error) {
+    console.error('Failed to reload servers:', error);
+    return { IsSuccess: false, ErrorInfo: error instanceof Error ? error.message : String(error) };
+  }
+});
+
+ipcMain.handle('backend:getActiveSessions', async () => {
+  try {
+    return await backendClient.send('getActiveSessions');
+  } catch (error) {
+    console.error('Failed to get active sessions:', error);
+    return [];
+  }
+});
+
+ipcMain.handle('backend:closeSession', async (_, connectionId: string) => {
+  try {
+    return await backendClient.send('closeSession', connectionId);
+  } catch (error) {
+    console.error(`Failed to close session ${connectionId}:`, error);
+    return { IsSuccess: false, ErrorInfo: error instanceof Error ? error.message : String(error) };
+  }
+});
+
+ipcMain.handle('backend:reconnectSession', async (_, connectionId: string) => {
+  try {
+    return await backendClient.send('reconnectSession', connectionId);
+  } catch (error) {
+    console.error(`Failed to reconnect session ${connectionId}:`, error);
+    return { IsSuccess: false, ErrorInfo: error instanceof Error ? error.message : String(error) };
   }
 });
 

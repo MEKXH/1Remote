@@ -64,7 +64,10 @@
     "history": {
       "title": "History",
       "subtitle": "Recently connected sessions.",
-      "empty": "No history available."
+      "empty": "No history available.",
+      "active_sessions": "Active sessions",
+      "reconnect": "Reconnect",
+      "disconnect": "Disconnect"
     },
     "network": {
       "title": "Network",

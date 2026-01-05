@@ -62,7 +62,10 @@
     "history": {
       "title": "履歴",
       "subtitle": "最近接続したセッション。",
-      "empty": "履歴がありません。"
+      "empty": "履歴がありません。",
+      "active_sessions": "アクティブセッション",
+      "reconnect": "再接続",
+      "disconnect": "切断"
     },
     "network": {
       "title": "ネットワーク",

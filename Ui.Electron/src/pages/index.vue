@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { IServerDto } from '../electron-api'
+import type { IServerDto, IDataSourceStatus } from '../electron-api'
 import { useFavorites } from '../composables/useFavorites'
 import AddServerModal from '../components/AddServerModal.vue'
 import type { ContextMenuItem } from '@nuxt/ui'
@@ -10,6 +10,8 @@ const { t } = useI18n()
 const servers = ref<IServerDto[]>([])
 const allTags = ref<string[]>([])
 const selectedTags = ref<string[]>([])
+const dataSourceStatus = ref<IDataSourceStatus | null>(null)
+const selectedIds = ref<Set<string>>(new Set())
 const stats = ref({
   ActiveSessions: 0,
   TotalServers: 0,
@@ -69,32 +71,148 @@ const filteredServers = computed(() => {
   return result
 })
 
-const fetchServers = async () => {
-  loading.value = true
-  error.value = ''
+const hasSelection = computed(() => selectedIds.value.size > 0)
+const selectedCount = computed(() => selectedIds.value.size)
+const filteredIds = computed(() => filteredServers.value.map(server => server.Id))
+const isAllSelected = computed(() => {
+  const ids = filteredIds.value
+  if (ids.length === 0) {
+    return false
+  }
+  return ids.every(id => selectedIds.value.has(id))
+})
+const selectedServers = computed(() =>
+  servers.value.filter(server => selectedIds.value.has(server.Id))
+)
+
+const setSelectedIds = (next: Set<string>) => {
+  selectedIds.value = next
+}
+
+const toggleSelect = (serverId: string) => {
+  const next = new Set(selectedIds.value)
+  if (next.has(serverId)) {
+    next.delete(serverId)
+  } else {
+    next.add(serverId)
+  }
+  setSelectedIds(next)
+}
+
+const clearSelection = () => {
+  setSelectedIds(new Set())
+}
+
+const selectAllFiltered = () => {
+  setSelectedIds(new Set(filteredIds.value))
+}
+
+const syncSelection = () => {
+  if (selectedIds.value.size === 0) {
+    return
+  }
+  const currentIds = new Set(servers.value.map(server => server.Id))
+  const next = new Set<string>()
+  selectedIds.value.forEach(id => {
+    if (currentIds.has(id)) {
+      next.add(id)
+    }
+  })
+  setSelectedIds(next)
+}
+
+const fetchServers = async (options: { withLoading?: boolean; resetError?: boolean } = {}) => {
+  const withLoading = options.withLoading !== false
+  const resetError = options.resetError !== false
+  if (withLoading) {
+    loading.value = true
+  }
+  if (resetError) {
+    error.value = ''
+  }
   try {
-    const [serversData, statsData, tagsData] = await Promise.all([
+    const [serversData, statsData, tagsData, statusData] = await Promise.all([
       window.electronAPI.getServers(),
       window.electronAPI.getDashboardStats(),
-      window.electronAPI.getTags()
+      window.electronAPI.getTags(),
+      window.electronAPI.getLocalDataSourceStatus()
     ])
     servers.value = serversData
+    syncSelection()
     if (statsData) {
       stats.value = statsData
     }
     if (tagsData) {
       allTags.value = tagsData
     }
+    dataSourceStatus.value = statusData
   } catch (err: any) {
     console.error('Failed to fetch servers:', err)
     error.value = err.message || t('common.unknown_error')
   } finally {
+    if (withLoading) {
+      loading.value = false
+    }
+  }
+}
+
+const refreshServers = async () => {
+  loading.value = true
+  error.value = ''
+  try {
+    const result = await window.electronAPI.reloadServers()
+    if (result && !result.IsSuccess) {
+      error.value = result.ErrorInfo || t('common.unknown_error')
+    }
+  } catch (err: any) {
+    console.error('Failed to reload servers:', err)
+    error.value = err.message || t('common.unknown_error')
+  } finally {
+    await fetchServers({ withLoading: false, resetError: false })
     loading.value = false
   }
 }
 
 const handleConnect = async (serverId: string) => {
   await window.electronAPI.connect(serverId)
+}
+
+const handleConnectSelected = async () => {
+  const targets = selectedServers.value.map(server => server.Id)
+  if (targets.length === 0) {
+    return
+  }
+  await Promise.all(targets.map(id => window.electronAPI.connect(id)))
+}
+
+const handleDeleteSelected = async () => {
+  const targets = selectedServers.value
+  if (targets.length === 0) {
+    return
+  }
+  const confirmed = confirm(
+    t('pages.dashboard.delete_confirm_multi', 'Delete {count} servers?', { count: targets.length })
+  )
+  if (!confirmed) {
+    return
+  }
+  loading.value = true
+  try {
+    for (const server of targets) {
+      const result = await window.electronAPI.deleteServer(server.Id)
+      if (!result.IsSuccess) {
+        alert(result.ErrorInfo || t('common.unknown_error'))
+        break
+      }
+    }
+  } catch (err: any) {
+    console.error('Failed to delete servers:', err)
+    alert(err.message || t('common.unknown_error'))
+  } finally {
+    clearSelection()
+    await fetchServers({ withLoading: false, resetError: false })
+    loading.value = false
+  }
 }
 
 const handleEdit = (serverId: string) => {
@@ -184,7 +302,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="p-8 max-w-7xl mx-auto w-full">
+  <div class="p-8 max-w-7xl mx-auto w-full" :class="{ 'pb-28': hasSelection }">
     <!-- Welcome Header -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
       <div>
@@ -210,7 +328,7 @@ onMounted(() => {
           </template>
         </UInput>
         <UButton icon="i-lucide-plus" :label="t('pages.dashboard.new_session')" @click="showAddModal = true" />
-        <UButton icon="i-lucide-refresh-cw" variant="outline" :label="t('common.refresh')" color="neutral" @click="fetchServers" :loading="loading" />
+        <UButton icon="i-lucide-refresh-cw" variant="outline" :label="t('common.refresh')" color="neutral" @click="refreshServers" :loading="loading" />
       </div>
     </div>
 
@@ -259,7 +377,7 @@ onMounted(() => {
         {{ t('pages.dashboard.connections') }} ({{ filteredServers.length }}<span v-if="filteredServers.length !== servers.length" class="text-zinc-400 font-normal">/ {{ servers.length }}</span>)
       </h2>
 
-      <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2">
         <!-- Sort options -->
         <UDropdownMenu>
           <UButton
@@ -343,6 +461,14 @@ onMounted(() => {
             @click="viewMode = 'list'"
           />
         </UFieldGroup>
+        <UButton
+          v-if="hasSelection"
+          size="sm"
+          variant="outline"
+          color="neutral"
+          :label="t('pages.dashboard.clear_selection', 'Clear')"
+          @click="clearSelection"
+        />
       </div>
     </div>
     
@@ -363,6 +489,24 @@ onMounted(() => {
        <UButton v-if="searchQuery" :label="t('pages.dashboard.clear_search')" variant="link" color="primary" @click="searchQuery = ''" class="mt-2" />
     </div>
 
+    <div
+      v-if="!loading && !error && dataSourceStatus && dataSourceStatus.Status !== 'OK'"
+      class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-900"
+    >
+      <div class="font-semibold">
+        {{ t('pages.dashboard.datasource_error', 'Data source is not ready') }}
+      </div>
+      <div class="text-sm mt-1">
+        {{ dataSourceStatus.StatusInfo || dataSourceStatus.Status }}
+      </div>
+      <div v-if="dataSourceStatus.Path" class="text-xs mt-2 text-amber-700 break-all">
+        {{ dataSourceStatus.Path }}
+      </div>
+      <div class="mt-3">
+        <UButton size="xs" color="neutral" variant="outline" :label="t('common.refresh')" @click="refreshServers" />
+      </div>
+    </div>
+
     <!-- Grid View -->
     <div v-else-if="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <UContextMenu v-for="server in filteredServers" :key="server.Id" :items="getContextMenuItems(server)">
@@ -381,7 +525,7 @@ onMounted(() => {
               <div class="p-2 rounded-lg bg-primary-500/10 text-primary-500">
                 <UIcon :name="server.Protocol.toLowerCase().includes('ssh') ? 'i-lucide-terminal' : 'i-lucide-monitor'" class="w-6 h-6" />
               </div>
-              <div class="flex gap-1">
+              <div class="flex items-center gap-1">
                 <UButton
                   :icon="isFavorite(server.Id) ? 'i-lucide-star' : 'i-lucide-star'"
                   :color="isFavorite(server.Id) ? 'yellow' : 'neutral'"
@@ -393,6 +537,12 @@ onMounted(() => {
                 <UDropdownMenu :items="getContextMenuItems(server)">
                   <UButton icon="i-lucide-more-vertical" variant="ghost" color="neutral" size="sm" @click.stop />
                 </UDropdownMenu>
+                <UCheckbox
+                  class="ml-1"
+                  :model-value="selectedIds.has(server.Id)"
+                  @update:model-value="toggleSelect(server.Id)"
+                  @click.stop
+                />
               </div>
             </div>
           </template>
@@ -426,6 +576,12 @@ onMounted(() => {
             :ui="{ root: 'w-full max-w-none', body: 'p-3 flex items-center justify-between' }"
           >
             <div class="flex items-center gap-4 flex-1 min-w-0">
+              <div class="shrink-0" @click.stop>
+                <UCheckbox
+                  :model-value="selectedIds.has(server.Id)"
+                  @update:model-value="toggleSelect(server.Id)"
+                />
+              </div>
               <div class="p-2 rounded-lg bg-primary-500/10 text-primary-500 shrink-0">
                 <UIcon :name="server.Protocol.toLowerCase().includes('ssh') ? 'i-lucide-terminal' : 'i-lucide-monitor'" class="w-5 h-5" />
               </div>
@@ -458,5 +614,28 @@ onMounted(() => {
     </div>
 
     <AddServerModal v-model="showAddModal" v-model:editing-id="editingId" @added="fetchServers" @updated="fetchServers" />
+    <div v-if="hasSelection" class="sticky bottom-4 z-10 mt-6">
+      <UCard class="ring-2 ring-primary-500/60 shadow-lg" :ui="{ body: 'p-3 flex items-center justify-between gap-4' }">
+        <div class="flex items-center gap-2 text-base">
+          <UButton class="text-base" size="xs" variant="ghost" color="neutral" :label="t('common.cancel', 'Cancel')" @click="clearSelection" />
+          <span class="text-base text-zinc-500">
+            {{ t('pages.dashboard.selected_count', '{count} selected', { count: selectedCount }) }}
+          </span>
+        </div>
+        <div class="flex items-center gap-2">
+          <UButton
+            class="text-base"
+            size="xs"
+            variant="outline"
+            color="neutral"
+            :label="t('pages.dashboard.select_all', 'Select all')"
+            @click="selectAllFiltered"
+            v-if="!isAllSelected"
+          />
+          <UButton class="text-base" size="xs" :label="t('common.connect')" @click="handleConnectSelected" />
+          <UButton class="text-base" size="xs" color="error" variant="outline" :label="t('pages.dashboard.context_menu.delete')" @click="handleDeleteSelected" />
+        </div>
+      </UCard>
+    </div>
   </div>
 </template>

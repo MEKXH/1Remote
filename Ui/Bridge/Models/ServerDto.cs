@@ -58,4 +58,24 @@ namespace _1RM.Bridge.Models
         public int Favorites { get; set; }
         public int Recent { get; set; }
     }
+
+    public class DataSourceStatusDto
+    {
+        public string DataSourceName { get; set; } = string.Empty;
+        public string DatabaseType { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public string StatusInfo { get; set; } = string.Empty;
+        public string Path { get; set; } = string.Empty;
+        public bool IsWritable { get; set; }
+    }
+
+    public class SessionDto
+    {
+        public string ConnectionId { get; set; } = string.Empty;
+        public string ServerId { get; set; } = string.Empty;
+        public string DisplayName { get; set; } = string.Empty;
+        public string SubTitle { get; set; } = string.Empty;
+        public string Protocol { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+    }
 }

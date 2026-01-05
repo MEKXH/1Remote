@@ -62,7 +62,10 @@
     "history": {
       "title": "歷史",
       "subtitle": "最近連接的會話。",
-      "empty": "暫無歷史記錄。"
+      "empty": "暫無歷史記錄。",
+      "active_sessions": "進行中的會話",
+      "reconnect": "重新連接",
+      "disconnect": "中斷連接"
     },
     "network": {
       "title": "網路",

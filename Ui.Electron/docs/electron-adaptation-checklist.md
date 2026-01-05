@@ -8,9 +8,9 @@ Priority: P0 core, P1 important, P2 nice-to-have, P3 optional
 - Basic server CRUD for RDP/SSH, search, sort, view toggle, favorites
 
 ## P0 Core parity
-- [~] Data source read/write (local sqlite) + load servers
+- [x] Data source read/write (local sqlite) + load servers
   - WPF: Ui/Service/DataSource, Ui/Model/GlobalData.cs
-- [~] Server list (card/list) with search, tags filter, sort, selection
+- [x] Server list (card/list) with search, tags filter, sort, selection
   - WPF: Ui/View/ServerView/List/ServerListPageView.xaml
   - WPF: Ui/View/ServerView/List/ServerListPageViewModel.cs
 - [ ] Connect / disconnect flow + session lifecycle
