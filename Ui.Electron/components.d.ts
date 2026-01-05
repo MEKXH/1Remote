@@ -20,6 +20,7 @@ declare module 'vue' {
     UCard: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Card.vue')['default']
     UIcon: typeof import('./node_modules/@nuxt/ui/dist/runtime/vue/components/Icon.vue')['default']
     UInput: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Input.vue')['default']
+    USkeleton: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Skeleton.vue')['default']
     UTooltip: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Tooltip.vue')['default']
   }
 }

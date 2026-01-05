@@ -24,6 +24,7 @@ namespace _1RM.Service
         private const string SEPARATOR = "+++!+!+++";
         private const string ACTIVATE = "activate";
         public const string APP_START_MINIMIZED = "start-minimized";
+        public const string ENABLE_IPC = "enable-ipc";
 
 
         public const string INSTALL = "install";

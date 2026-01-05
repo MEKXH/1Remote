@@ -1,10 +1,13 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import squirrelStartup from 'electron-squirrel-startup';
+import { IpcClient } from './ipc-client';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const backendClient = new IpcClient('1Remote_IPC');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (squirrelStartup) {
@@ -14,10 +17,11 @@ if (squirrelStartup) {
 const createWindow = () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1200,
+    height: 800,
+    titleBarStyle: 'hidden', // Better for custom titlebars
     webPreferences: {
-      preload: path.join(__dirname, 'preload.mjs'), // Use .mjs if possible or ensure it's handled
+      preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
       contextIsolation: true,
     },
@@ -37,9 +41,27 @@ const createWindow = () => {
   }
 };
 
+// IPC Handlers
+ipcMain.handle('backend:getServers', async () => {
+  try {
+    return await backendClient.send('getServers');
+  } catch (error) {
+    console.error('Failed to get servers from backend:', error);
+    return [];
+  }
+});
+
+ipcMain.handle('backend:connect', async (_, serverId: string) => {
+  try {
+    return await backendClient.send('connect', serverId);
+  } catch (error) {
+    console.error(`Failed to connect to ${serverId}:`, error);
+    return false;
+  }
+});
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
 app.on('ready', createWindow);
 
 // Quit when all windows are closed, except on macOS. There, it's common

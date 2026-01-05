@@ -19,6 +19,7 @@ using _1RM.View.Utils;
 using System.Collections.Generic;
 using _1RM.Utils.PuTTY.Model;
 using _1RM.Utils.PuTTY.Model;
+using _1RM.Bridge;
 using _1RM.Utils.Tracing;
 
 namespace _1RM
@@ -31,6 +32,7 @@ namespace _1RM
 
     internal static class AppInitHelper
     {
+        public static NamedPipeIpcServer? IpcServer;
         private static bool WritePermissionCheck(string path, bool isFile, bool alert, bool exitIfError)
         {
             Debug.Assert(LanguageServiceObj != null);
@@ -434,6 +436,10 @@ namespace _1RM
             if (ConfigurationServiceObj.General.ShowRecentlySessionInTray)
                 IoC.Get<TaskTrayService>().ReloadTaskTrayContextMenu();
             IoC.Get<LauncherWindowViewModel>().SetHotKey();
+
+            // Start IPC Server for Electron UI
+            IpcServer = new NamedPipeIpcServer("1Remote_IPC");
+            IpcServer.Start();
         }
     }
 }
