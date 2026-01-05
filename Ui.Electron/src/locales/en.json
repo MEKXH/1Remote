@@ -1,0 +1,12 @@
+{
+  "app": {
+    "title": "1Remote",
+    "menu": {
+      "sessions": "Sessions",
+      "favorites": "Favorites",
+      "history": "History",
+      "network": "Network",
+      "settings": "Settings"
+    }
+  }
+}

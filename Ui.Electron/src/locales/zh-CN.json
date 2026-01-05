@@ -1,0 +1,12 @@
+{
+  "app": {
+    "title": "1Remote",
+    "menu": {
+      "sessions": "会话",
+      "favorites": "收藏",
+      "history": "历史",
+      "network": "网络",
+      "settings": "设置"
+    }
+  }
+}
