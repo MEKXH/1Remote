@@ -37,6 +37,8 @@
       "active_sessions_title": "進行中的會話",
       "reconnect": "重新連接",
       "disconnect": "中斷連接",
+      "selected_count": "已選取 {count} 項",
+      "select_all": "全選",
       "sort": {
         "label": "排序",
         "by": "排序方式",
@@ -54,7 +56,9 @@
         "edit": "編輯",
         "duplicate": "複製",
         "delete": "刪除"
-      }
+      },
+      "delete_confirm": "確定要刪除伺服器 \"{name}\" 嗎？",
+      "delete_confirm_multi": "確定要刪除 {count} 個伺服器嗎？"
     },
     "favorites": {
       "title": "收藏",

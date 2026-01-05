@@ -38,6 +38,8 @@
       "active_sessions_title": "Active sessions",
       "reconnect": "Reconnect",
       "disconnect": "Disconnect",
+      "selected_count": "{count} selected",
+      "select_all": "Select all",
       "sort": {
         "label": "Sort",
         "by": "Sort By",
@@ -49,6 +51,7 @@
         "descending": "Descending"
       },
       "delete_confirm": "Are you sure you want to delete server \"{name}\"?",
+      "delete_confirm_multi": "Delete {count} servers?",
       "context_menu": {
         "connect": "Connect",
         "add_favorite": "Add to Favorites",

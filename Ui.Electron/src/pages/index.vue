@@ -227,7 +227,7 @@ const handleDeleteSelected = async () => {
     return
   }
   const confirmed = confirm(
-    t('pages.dashboard.delete_confirm_multi', 'Delete {count} servers?', { count: targets.length })
+    t('pages.dashboard.delete_confirm_multi', { count: targets.length })
   )
   if (!confirmed) {
     return
@@ -628,12 +628,12 @@ onBeforeUnmount(() => {
           <UButton class="text-base" size="xs" variant="ghost" color="neutral" :label="t('common.cancel', 'Cancel')"
             @click="clearSelection" />
           <span class="text-base text-zinc-500">
-            {{ t('pages.dashboard.selected_count', '{count} selected', { count: selectedCount }) }}
+            {{ t('pages.dashboard.selected_count', { count: selectedCount }) }}
           </span>
         </div>
         <div class="flex items-center gap-2">
           <UButton class="text-base" size="xs" variant="outline" color="neutral"
-            :label="t('pages.dashboard.select_all', 'Select all')" @click="selectAllFiltered" v-if="!isAllSelected" />
+            :label="t('pages.dashboard.select_all')" @click="selectAllFiltered" v-if="!isAllSelected" />
           <UButton class="text-base" size="xs" :label="t('common.connect')" @click="handleConnectSelected" />
           <UButton class="text-base" size="xs" color="error" variant="outline"
             :label="t('pages.dashboard.context_menu.delete')" @click="handleDeleteSelected" />

@@ -38,6 +38,8 @@
       "active_sessions_title": "活跃会话",
       "reconnect": "重连",
       "disconnect": "断开",
+      "selected_count": "已选择 {count} 项",
+      "select_all": "全选",
       "sort": {
         "label": "排序",
         "by": "排序方式",
@@ -49,6 +51,7 @@
         "descending": "降序"
       },
       "delete_confirm": "确定要删除服务器 \"{name}\" 吗？",
+      "delete_confirm_multi": "确定要删除 {count} 个服务器吗？",
       "context_menu": {
         "connect": "连接",
         "add_favorite": "添加到收藏",

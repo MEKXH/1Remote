@@ -37,6 +37,8 @@
       "active_sessions_title": "アクティブセッション",
       "reconnect": "再接続",
       "disconnect": "切断",
+      "selected_count": "{count} 件選択",
+      "select_all": "すべて選択",
       "sort": {
         "label": "並び替え",
         "by": "並び替え基準",
@@ -47,6 +49,8 @@
         "ascending": "昇順",
         "descending": "降順"
       },
+      "delete_confirm": "サーバー「{name}」を削除しますか？",
+      "delete_confirm_multi": "{count} 件のサーバーを削除しますか？",
       "context_menu": {
         "connect": "接続",
         "add_favorite": "お気に入りに追加",
